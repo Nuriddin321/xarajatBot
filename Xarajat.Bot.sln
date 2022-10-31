@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.3.32929.385
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Xarajat.Bot", "Xarajat.Bot\Xarajat.Bot.csproj", "{A2113B05-C7D1-4604-91BB-3CFED6E3BBAB}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Xarajat.Data", "Xarajat.Data\Xarajat.Data.csproj", "{58D825AF-D40B-4DEF-9507-11ECCEBBE965}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A2113B05-C7D1-4604-91BB-3CFED6E3BBAB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A2113B05-C7D1-4604-91BB-3CFED6E3BBAB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A2113B05-C7D1-4604-91BB-3CFED6E3BBAB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A2113B05-C7D1-4604-91BB-3CFED6E3BBAB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{58D825AF-D40B-4DEF-9507-11ECCEBBE965}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{58D825AF-D40B-4DEF-9507-11ECCEBBE965}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{58D825AF-D40B-4DEF-9507-11ECCEBBE965}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{58D825AF-D40B-4DEF-9507-11ECCEBBE965}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {E1434DA1-941E-491B-A70E-E21386E7225C}
+	EndGlobalSection
+EndGlobal
