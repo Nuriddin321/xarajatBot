@@ -1,17 +1,16 @@
 using Microsoft.EntityFrameworkCore;
 using Xarajat.Bot.Repositories;
 using Xarajat.Bot.Services;
-using Xarajat.Data.Context;
+using Xarajat.Bot.Context;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDbContext<XarajatDbContext>(options =>
 {
-    options.UseSqlServer(builder.Configuration.GetConnectionString("SqlServerConnection"));
-    options.UseLazyLoadingProxies();
+    options.UseSqlite(builder.Configuration.GetConnectionString("SqlServerConnection"));
+    options.UseLazyLoadingProxies(); 
 
 });
-
 
 builder.Services.AddScoped<UserRepository>();
 builder.Services.AddScoped<RoomRepository>(); 

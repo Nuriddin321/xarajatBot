@@ -1,14 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using System.Threading;
-using Telegram.Bot;
-using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
 using Xarajat.Bot.Repositories;
 using Xarajat.Bot.Services;
-using Xarajat.Data.Entities;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
+using Xarajat.Bot.Entities;
 using Update = Telegram.Bot.Types.Update;
-using User = Xarajat.Data.Entities.User;
+using User = Xarajat.Bot.Entities.User;
 
 
 namespace Xarajat.Bot.Controllers;
@@ -43,146 +39,186 @@ public partial class BotController : ControllerBase
     public async Task PostUpdate(Update update)
     {
 
-
         if (update.Type != UpdateType.Message && update.Type != UpdateType.CallbackQuery)
             return;
 
-
         var (chatId, message, username) = GetValues(update);
         var user = await FilterUser(chatId, username);
-
-
-
-        if (message is "/key" or "/users" or "/myroom" or "/outofroom") //  or "Ha chiqaman" or "Yo'q qolaman"
+       
+        if (message is "/key" or "/users" or "/myroom" or "/outofroom" or "Ha chiqaman" or "Yo'q qolaman") 
         {
-            _logger.LogInformation($" mami data kere -> {message}");
             //botdagi menu  commandalari
             HandleCommandMessage(user, message);
         }
         else if (user.Step == 0)
         {
-            if (message == "Yangi xona ochish")
+            if (message == "🏠Yangi xona ochish")
             {
                 user.Step = 1;
                 await _userRepository.UpdateUser(user);
-                _botService.SendMessage(user.ChatId, "Xonani nomini kiriting");
+                _botService.SendMessage(user.ChatId, "✏️Xonani nomini kiriting");
             }
-            else if (message == "Xonaga qo'shilish")
+            else if (message == "🏠🏃‍♂️Xonaga qo'shilish")
             {
                 user.Step = 2;
                 await _userRepository.UpdateUser(user);
-                _botService.SendMessage(user.ChatId, "kalit so'zni kiriting");
+
+                var menu = new List<string>() { "orqaga" };
+                _botService.SendMessage(user.ChatId, $"kalit so'zni kiriting", _botService.GetKeyboard(menu));
             }
             else
             {
-                var menu = new List<string>() { "Yangi xona ochish", "Xonaga qo'shilish" };
+                var menu = new List<string>() { "🏠Yangi xona ochish", "🏠🏃‍♂️Xonaga qo'shilish" };
                 _botService.SendMessage(user.ChatId, "Menu", _botService.GetKeyboard(menu));
             }
         }
         else if (user.Step == 1)
         {
-            var room = new Room
+            if (string.IsNullOrEmpty(message) || message == "🏠Yangi xona ochish")
             {
-                Name = message,
-                Key = Guid.NewGuid().ToString("N")[..10],
-                Status = RoomStatus.Created
-            };
-
-            await _roomRepository.AddRoomAsync(room);
-
-            _botService.SendMessage(user.ChatId, $" Xonaga xush kelibsiz"); //{user.Room.Name}
-
-            user.RoomId = room.Id;
-            user.IsAdmin = true;
-            user.Step = 3;
-            await _userRepository.UpdateUser(user);
-
-            var menu = new List<string>() { "Xarajat qo'shish" };
-            _botService.SendMessage(user.ChatId, _botService.GetKeyboard(menu));
-
-        }
-        else if (user.Step == 2)
-        {
-
-            var room = await _roomRepository.GetRoomByKey(message);
-
-            if (room is null)
-            {
-                _botService.SendMessage(user.ChatId, "Unday xona topilmadi , kalit so'zi qayta kiriting");
+                _botService.SendMessage(user.ChatId, "✏️Xonani nomini kiriting");
             }
-            else if (room is not null)
+            else if (message == "🏠🏃‍♂️Xonaga qo'shilish")
             {
+                user.Step = 2;
+                await _userRepository.UpdateUser(user);
+
+                var menu = new List<string>() { "orqaga" };
+                _botService.SendMessage(user.ChatId, $"🔑kalit so'zni kiriting", _botService.GetKeyboard(menu));
+            }
+            else
+            {
+                var room = new Room
+                {
+                    Name = message,
+                    Key = Guid.NewGuid().ToString("N")[..10],
+                    Status = RoomStatus.Active
+                };
+
+                await _roomRepository.AddRoomAsync(room);
+
+
                 user.RoomId = room.Id;
+                user.IsAdmin = true;
                 user.Step = 3;
                 await _userRepository.UpdateUser(user);
 
-                _botService.SendMessage(user.ChatId, $"{room.Name} nomli xonaga  xush kelibsiz. \n Xona xaqida batafsil malumotlar menuda");
+                var menu = new List<string>() { "🛒Xarajat qo'shish", "📊Umumiy xarajatlar", "👤💸Mening xarajatlarim" };
+                _botService.SendMessage(user.ChatId, $" {user.Room.Name} nomli xonaga xush kelibsiz", _botService.GetKeyboard(menu));
+            }
+        }
+        else if (user.Step == 2)
+        {
+            if(string.IsNullOrEmpty(message))
+            {
+                _botService.SendMessage(user.ChatId, "Kalit so'zni qayta kiriting");
+            }
+            else if (message == "orqaga")
+            {
+                user.Step = 0;
+                await _userRepository.UpdateUser(user);
 
-                var menu = new List<string>() { "Xarajat qo'shish" };
-                _botService.SendMessage(user.ChatId, _botService.GetKeyboard(menu));
+                var menu = new List<string>() { "🏠Yangi xona ochish", "🏠🏃‍♂️Xonaga qo'shilish" };
+                _botService.SendMessage(user.ChatId, "Menu", _botService.GetKeyboard(menu));
+            }
+            else
+            {
+                var room = await _roomRepository.GetRoomByKey(message);
+
+                if (room is null)
+                {
+                    _botService.SendMessage(user.ChatId, "Unday xona topilmadi, kalit so'zni qayta kiriting");
+                }
+                else if (room is not null)
+                {
+                    user.RoomId = room.Id;
+                    user.Step = 3;
+                    await _userRepository.UpdateUser(user);
+
+
+                    var menu = new List<string>() { "🛒Xarajat qo'shish", "📊Umumiy xarajatlar", "👤💸Mening xarajatlarim" };
+                    _botService.SendMessage(user.ChatId, $"{room.Name} nomli xonaga  xush kelibsiz. \n Xona xaqida batafsil malumotlar menuda", _botService.GetKeyboard(menu));
+                }
             }
         }
         else if (user.Step == 3)
         {
-            if (user.Room.Status is not RoomStatus.Active)
+            if (user.Room.Status == RoomStatus.Active)
             {
-                var room = user.Room;
-                room.Status = RoomStatus.Active;
-                await _roomRepository.UpdateRoom(room);
-            }
-
-            if (message == "Xarajat qo'shish")
-            {
-
-                user.Step = 4;
-                await _userRepository.UpdateUser(user);
-                _botService.SendMessage(user.ChatId, "xarajatingizni quyidagi tartibda kiriting: avval summasi keyin nimaligi yozib yuboorish tugmasini bosing 👇 \n");
-                _botService.SendMessage(user.ChatId, "15000 - olma oldim \nyoki \n40000 - yarim kilo go'sht oldim");
-            }
-            else if (message == "Mening xarajatlarim")
-            {
-                string outlaysList = "";
-                int sum = 0;
-
-                var userOutlayList = user.Outlays;
-
-                foreach (var outlay in userOutlayList)
+                if (message == "🛒Xarajat qo'shish")
                 {
-                    outlaysList += outlay.Cost + " - " + outlay.Description + "\n\n";
-                    sum += outlay.Cost;
+
+                    user.Step = 4;
+                    await _userRepository.UpdateUser(user);
+                    _botService.SendMessage(user.ChatId, "Xarajatingizni quyidagi tartibda kiriting: avval summasi keyin nimaligi yozib yuborish tugmasini bosing 👇 \n");
+
+                    var menu = new List<string>() { "orqaga" };
+                    _botService.SendMessage(user.ChatId, $"15000 - olma oldim \nyoki \n40000 - yarim kilo go'sht oldim", _botService.GetKeyboard(menu));
+
                 }
-
-                _botService.SendMessage(chatId, outlaysList);
-                _botService.SendMessage(user.ChatId, $"Mening xarajatim {sum} sum");
-
-            }
-            else if (message == "Umumiy xarajatlar")
-            {
-                string outlaysList = "";
-                int sum = 0;
-
-                var room = user.Room;
-
-                foreach (var outlay in room.Outlays)
+                else if (message == "👤💸Mening xarajatlarim")
                 {
-                    outlaysList += outlay.ToReadable + "\n\n";
-                    sum += outlay.Cost;
-                }
+                    string outlaysList = "";
+                    int sum = 0;
 
-                _botService.SendMessage(chatId, outlaysList);
-                _botService.SendMessage(user.ChatId, $"Umumiy xarajat {sum} sum");
+                    var userOutlayList = user.Outlays;
+
+                    foreach (var outlay in userOutlayList)
+                    {
+                        outlaysList += outlay.Cost + " - " + outlay.Description + "\n\n";
+                        sum += outlay.Cost;
+                    }
+
+                    _botService.SendMessage(chatId, outlaysList);
+                    _botService.SendMessage(user.ChatId, $"Mening xarajatim {sum} sum");
+
+                }
+                else if (message == "📊Umumiy xarajatlar")
+                {
+                    string outlaysList = "";
+                    int sum = 0;
+
+                    var room = user.Room;
+
+                    foreach (var outlay in room.Outlays)
+                    {
+                        outlaysList += outlay.ToReadable + "\n\n";
+                        sum += outlay.Cost;
+                    }
+
+                    _botService.SendMessage(chatId, outlaysList);
+                    _botService.SendMessage(user.ChatId, $"Umumiy xarajat {sum} sum");
+                }
+                else
+                {
+                    var menu = new List<string>() { "🛒Xarajat qo'shish", "📊Umumiy xarajatlar", "👤💸Mening xarajatlarim" };
+                    _botService.SendMessage(user.ChatId, "🤔", _botService.GetKeyboard(menu));
+                }
             }
             else
             {
-                var menu = new List<string>() { "Xarajat qo'shish", "Umumiy xarajatlar", "Mening xarajatlarim" };
-                _botService.SendMessage(user.ChatId, "🤔", _botService.GetKeyboard(menu));
+                _botService.SendMessage(user.ChatId, "Xona xolati active emas, yangi xona oching yoki boshqa xonaga qo'shiling ");
+                 
+                await _userRepository.DeleteUSer(user);
+
+                var menu = new List<string>() { "🏠Yangi xona ochish", "🏠🏃‍♂️Xonaga qo'shilish" };
+                _botService.SendMessage(user.ChatId, "Menu", _botService.GetKeyboard(menu));
             }
+
         }
         else if (user.Step == 4)
         {
             if (string.IsNullOrEmpty(message))
             {
                 _botService.SendMessage(user.ChatId, "Iltimos xarajatni korsatilgan tartibga mos ravishda kiriting");
+            }
+            if (message == "orqaga")
+            {
+                user.Step = 3;
+                await _userRepository.UpdateUser(user);
+
+                var menu = new List<string>() { "🛒Xarajat qo'shish", "📊Umumiy xarajatlar", "👤💸Mening xarajatlarim" };
+                _botService.SendMessage(user.ChatId, "Xarajat qo'shmadingiz", _botService.GetKeyboard(menu));
             }
             else
             {
@@ -197,7 +233,6 @@ public partial class BotController : ControllerBase
                 else
                 {
                     //xarajatlarni qo'wiw 
-
                     var outlay = new Outlay
                     {
                         Cost = cost,
@@ -211,39 +246,19 @@ public partial class BotController : ControllerBase
                     user.Step = 3;
                     await _userRepository.UpdateUser(user);
 
-                    var menu = new List<string>() { "Xarajat qo'shish", "Umumiy xarajatlar", "Mening xarajatlarim" };
+                    var menu = new List<string>() { "🛒Xarajat qo'shish", "📊Umumiy xarajatlar", "👤💸Mening xarajatlarim" };
                     _botService.SendMessage(user.ChatId, "✅ Xarajatingiz muvaffaqiyatli qo'shildi", _botService.GetKeyboard(menu));
                 }
             }
         }
     }
 
-    //private async Task HandleUnknownUpdate(TelegramBotService botService, Update update)
-    //{
-    //    _botService.SendMessage(update.Message.Chat.Id, "unknown type");
-    //}
-
-    //private async Task HandleCallbackQueryAsync(TelegramBotService botService, CallbackQuery? callbackQuery, Update update)
-    //{
-    //    if(callbackQuery.Data == "Ha chiqaman")
-    //    {
-    //        _botService.SendMessage(update.Message.Chat.Id, "chiqti");
-    //    }
-
-    //}
-
-    //private async Task HandleMessageAsync(TelegramBotService botService, Message? message)
-    //{
-
-    //}
-
     private Tuple<long, string, string> GetValues(Update update)
     {
-
         long chatId = 0;
         var message = "";
         var name = "";
-        if (update.Type == UpdateType.Message)
+        if (update.Type == UpdateType.Message && update.Message.Text.Length < 50)
         {
             chatId = update.Message!.From!.Id;
             message = update.Message.Text!;
@@ -276,6 +291,4 @@ public partial class BotController : ControllerBase
         }
         return user;
     }
-
 }
-

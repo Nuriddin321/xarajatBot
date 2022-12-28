@@ -1,6 +1,4 @@
-﻿using Microsoft.Extensions.Options;
-using Telegram.Bot.Types.InputFiles;
-using Telegram.Bot.Types.ReplyMarkups;
+﻿using Telegram.Bot.Types.ReplyMarkups;
 using Telegram.Bot;
 
 namespace Xarajat.Bot.Services;
@@ -22,16 +20,6 @@ public class TelegramBotService
     {
         _bot.SendTextMessageAsync(chatId, " ", replyMarkup: reply);
     }
-
-    //public void SendMessage(long chatId, string message, Stream image, IReplyMarkup reply = null)
-    //{
-    //    _bot.SendPhotoAsync(chatId, new InputOnlineFile(image), message, replyMarkup: reply);
-    //}
-
-    //public void EditMessageButtons(long chatId, int messageId, InlineKeyboardMarkup reply)
-    //{
-    //    _bot.EditMessageReplyMarkupAsync(chatId, messageId, replyMarkup: reply);
-    //}
 
     public ReplyKeyboardMarkup GetKeyboard(List<string> buttonsText)
     {
@@ -58,33 +46,5 @@ public class TelegramBotService
 
         return new InlineKeyboardMarkup(buttons);
     }
-
-    //public InlineKeyboardMarkup GetInlineTicketsKeyboard(List<string> buttonsText, int? ticketIndex = null)
-    //{
-    //    var buttons = new InlineKeyboardButton[buttonsText.Count][];
-
-    //    for (var i = 0; i < buttonsText.Count; i++)
-    //    {
-    //        buttons[i] = new[] { InlineKeyboardButton.WithCallbackData(
-    //            text: buttonsText[i],
-    //            callbackData: ticketIndex == null ? i.ToString() : ticketIndex.ToString())  };
-    //    }
-
-    //    return new InlineKeyboardMarkup(buttons);
-    //}
-
-    //public InlineKeyboardMarkup GetInlineKeyboard(List<string> buttonsText, int correctAnswerIndex, int questionIndex, int ticketIndex)
-    //{
-    //    InlineKeyboardButton[][] buttons = new InlineKeyboardButton[buttonsText.Count][];
-
-    //    for (var i = 0; i < buttonsText.Count; i++)
-    //    {
-    //        buttons[i] = new InlineKeyboardButton[] { InlineKeyboardButton.WithCallbackData(
-    //            text: buttonsText[i],
-    //            callbackData: $"{correctAnswerIndex},{i},{questionIndex},{ticketIndex}")};
-    //    }
-
-    //    return new InlineKeyboardMarkup(buttons);
-    //}
 }
 

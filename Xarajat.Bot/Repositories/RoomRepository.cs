@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Xarajat.Data.Context;
-using Xarajat.Data.Entities;
+using Xarajat.Bot.Context;
+using Xarajat.Bot.Entities;
 
 namespace Xarajat.Bot.Repositories;
 
@@ -33,6 +33,12 @@ public class RoomRepository
 		_context.Update(room);
 		await _context.SaveChangesAsync();
 	}
+
+    public async Task DeleteRoom(Room room)
+    {
+        _context.Rooms.Remove(room);
+        await _context.SaveChangesAsync();
+    }
 
 }
 

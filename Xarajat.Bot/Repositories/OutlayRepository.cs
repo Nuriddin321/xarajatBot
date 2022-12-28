@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Xarajat.Data.Context;
-using Xarajat.Data.Entities;
+using Xarajat.Bot.Context;
+using Xarajat.Bot.Entities;
 
 namespace Xarajat.Bot.Repositories;
 
